@@ -95,7 +95,7 @@ public class Pipeline {
                             newPc = DECODE.temp3 + DECODE.oper3;
                         }
                         else{
-                            if(branchTaken != predictionTable[DECODE.temp3]){
+                            if(branchTaken != predictionTable[DECODE.temp3 % predictionTable.length]){
                                 changePc = true;
                                 invalidateInstructions = true;
                                 newPc = DECODE.temp3 + DECODE.oper3;
