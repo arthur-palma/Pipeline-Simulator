@@ -61,7 +61,7 @@ public class Pipeline {
             FETCH.temp3 = pc;
             executedInstruction++;
             if(FETCH.opCode.equals("BEQ") && predictionEnabled){
-                boolean branchTaken = predictionTable[pc];
+                boolean branchTaken = predictionTable[pc % predictionTable.length];
                 changePc = true;
                 newPc = branchTaken ? pc + FETCH.oper3 : pc + 1;
             }
