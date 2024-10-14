@@ -6,8 +6,11 @@ import java.util.Scanner;
 
 public class Pipeline {
 
-    private int[] registers = new int[32];
+    public int invalidInstructions = 0;
+    public int executedInstruction = 0;
 
+
+    private int[] registers = new int[32];
     private int[] memory = new int[128];
     private int pc = 0;
     private ArrayList<Instruction> instructions = new ArrayList<>();
@@ -56,7 +59,7 @@ public class Pipeline {
         if( pc < instructions.size()){
             FETCH = instructions.get(pc);
             FETCH.temp3 = pc;
-
+            executedInstruction++;
             if(FETCH.opCode.equals("BEQ") && predictionEnabled){
                 boolean branchTaken = predictionTable[pc];
                 changePc = true;
@@ -145,7 +148,8 @@ public class Pipeline {
         WRITEBACK = MEMORYACCESS;
     }
 
-    public void printPipelineState(int cycles) {
+    public void printPipelineState() {
+        System.out.println("Executed Instructions: " + executedInstruction + "  |   Invalid Instructions: " + invalidInstructions);
         System.out.println();
         System.out.printf("%-12s: %s%n", "FETCH", (FETCH != null ? FETCH : "null"));
         System.out.printf("%-12s: %s%n", "DECODE", (DECODE != null ? DECODE : "null"));
@@ -172,27 +176,10 @@ public class Pipeline {
         System.out.println("=============================================================");
     }
 
-    public void runPipeline() {
+    public void runPipeline(boolean enablePrediction, boolean automaticRun) {
         int cycles = 1;
         Scanner scanner = new Scanner(System.in);
-        boolean pass = true;
-        boolean auto = true;
-
-        System.out.println("Digite (S) caso queira acionar a predição de desvio?");
-        String predictionInput = scanner.nextLine().trim().toUpperCase();
-
-        if (predictionInput.equals("S")){
-            predictionEnabled = true;
-        }
-
-        System.out.println("Deseja avançar os ciclos automaticamente (A) ou manualmente (M)?");
-        String userInput = scanner.nextLine().trim().toUpperCase();
-
-
-        if (userInput.equals("M")) {
-            auto = false;
-            pass = false;
-        }
+        predictionEnabled = enablePrediction;
 
         while (!halt) {
 
@@ -205,7 +192,7 @@ public class Pipeline {
             decode();
             instructionFetch();
 
-            printPipelineState(cycles);
+            printPipelineState();
 
             if(changePc){
                 pc = newPc;
@@ -213,21 +200,17 @@ public class Pipeline {
                 if(invalidateInstructions){
                     FETCH.valida = false;
                     DECODE.valida = false;
+                    invalidInstructions += 2;
                     invalidateInstructions = false;
                 }
             }
 
             cycles++;
 
-            if (!pass) {
-                System.out.println("Pressione qualquer tecla para avançar para o próximo ciclo...");
+            if (!automaticRun) {
+                System.out.println("Press Enter to next cycle...");
                 scanner.nextLine();
             }
-
-            if(!auto){
-                pass = false;
-            }
-
         }
     }
 }
